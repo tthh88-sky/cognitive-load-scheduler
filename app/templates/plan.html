@@ -11,11 +11,11 @@
 
 <form method="post" action="/plan/generate" class="strategy-form">
   <input type="hidden" name="week" value="{{ week }}" />
-  <p class="hint" style="margin-top: 0;">Tasks are placed from now onward at 15-minute resolution, matched to the start time with the best focus (energy minus recent-event residue) for their cognitive load — never in the past, never after their deadline. Deep tasks (load 5+) respect a daily cap and a break between blocks. Urgent tasks (high priority + near deadline) may relax those limits, as a last resort even overlapping an interruptible event, always with a warning.</p>
+  <p class="hint" style="margin-top: 0;">Tasks land at the best-focus time for their load, from now until their deadline. Urgent tasks may relax deep-work limits as a last resort, always with a warning.</p>
 
   <label class="radio-option" style="margin-bottom: 14px;">
     <input type="checkbox" name="allow_split" value="true" {{ 'checked' if selected_allow_split else '' }} />
-    <span><strong>Allow splitting a task across sessions</strong> — when a task doesn't fit in one slot, cover it with 2+ smaller slots (possibly on different days) so it starts as soon as time is free, instead of waiting for one slot big enough for the whole thing or leaving it unscheduled. Off by default: resuming a task mid-session has its own context-switch cost, so only turn this on if you'd rather split than wait or skip.</span>
+    <span><strong>Allow splitting a task across sessions</strong> — start sooner by covering a task with 2+ smaller slots instead of waiting for one big enough.</span>
   </label>
 
   <button type="submit">Generate {{ 'This' if week == 'this' else 'Next' }} Week's Plan</button>
@@ -25,7 +25,7 @@
   <p class="empty">No plan generated yet for this week. Click "Generate Plan" above.</p>
 {% else %}
 
-<div class="week-grid" style="grid-template-columns: 56px repeat({{ day_order|length }}, 1fr); grid-template-rows: 32px;">
+<div class="week-grid" style="grid-template-columns: 56px repeat({{ day_order|length }}, 1fr); grid-template-rows: 32px repeat({{ day_span }}, 1fr);">
   <div class="week-grid-head" style="grid-column: 1;"></div>
   {% for day in day_order %}
     <div class="week-grid-head" style="grid-column: {{ loop.index + 1 }};">{{ day }}</div>
@@ -34,7 +34,7 @@
     <div class="hour-label-cell" style="grid-row: {{ row_start }} / span 30;">{{ label }}</div>
   {% endfor %}
   {% for day in day_order %}
-    <div class="day-col-bg" style="grid-column: {{ loop.index + 1 }}; grid-row: 2 / span 1500;"></div>
+    <div class="day-col-bg" style="grid-column: {{ loop.index + 1 }}; grid-row: 2 / span {{ day_span }};"></div>
   {% endfor %}
   {% for b in blocks %}
     {% set a = b.item %}

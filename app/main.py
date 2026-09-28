@@ -44,6 +44,12 @@ DAY_ORDER = list(WEEK)  # Mon..Sun, engine order
 LABEL_STEP_MINUTES = 30
 
 
+def _day_span_minutes(open_t: time, close_t: time) -> int:
+    open_m = open_t.hour * 60 + open_t.minute
+    close_m = close_t.hour * 60 + close_t.minute
+    return max(0, close_m - open_m)
+
+
 def _hour_labels(open_t: time, close_t: time) -> list[tuple[int, str]]:
     open_m = open_t.hour * 60 + open_t.minute
     close_m = close_t.hour * 60 + close_t.minute
@@ -166,6 +172,7 @@ def calendar_page(request: Request, week: str = "this", db: Session = Depends(ge
             "blocks": blocks,
             "day_order": prefs.workdays,
             "hour_labels": _hour_labels(prefs.workday_start, prefs.workday_end),
+            "day_span": _day_span_minutes(prefs.workday_start, prefs.workday_end),
             "week": week,
             "week_start": week_start,
             "event_types": [e.value for e in EventType if e != EventType.LUNCH],
@@ -306,6 +313,7 @@ def plan_page(request: Request, week: str = "this", db: Session = Depends(get_db
             "unscheduled": unscheduled,
             "day_order": prefs.workdays,
             "hour_labels": _hour_labels(prefs.workday_start, prefs.workday_end),
+            "day_span": _day_span_minutes(prefs.workday_start, prefs.workday_end),
             "has_plan": len(assignments) > 0,
             "selected_allow_split": settings.allow_split,
         },
@@ -342,6 +350,7 @@ def overview_page(request: Request, week: str = "this", db: Session = Depends(ge
             "blocks": blocks,
             "day_order": prefs.workdays,
             "hour_labels": _hour_labels(prefs.workday_start, prefs.workday_end),
+            "day_span": _day_span_minutes(prefs.workday_start, prefs.workday_end),
         },
     )
 
@@ -462,6 +471,7 @@ def _calendar_partial(request: Request, db: Session):
             "blocks": blocks,
             "day_order": prefs.workdays,
             "hour_labels": _hour_labels(prefs.workday_start, prefs.workday_end),
+            "day_span": _day_span_minutes(prefs.workday_start, prefs.workday_end),
             "week": "this",
         },
     )

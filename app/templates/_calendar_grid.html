@@ -1,4 +1,4 @@
-<div class="week-grid" id="calendar-grid" style="grid-template-columns: 56px repeat({{ day_order|length }}, 1fr); grid-template-rows: 32px;">
+<div class="week-grid" id="calendar-grid" style="grid-template-columns: 56px repeat({{ day_order|length }}, 1fr); grid-template-rows: 32px repeat({{ day_span }}, 1fr);">
   <div class="week-grid-head" style="grid-column: 1;"></div>
   {% for day in day_order %}
     <div class="week-grid-head" style="grid-column: {{ loop.index + 1 }};">{{ day }}</div>
@@ -7,7 +7,7 @@
     <div class="hour-label-cell" style="grid-row: {{ row_start }} / span 30;">{{ label }}</div>
   {% endfor %}
   {% for day in day_order %}
-    <div class="day-col-bg" style="grid-column: {{ loop.index + 1 }}; grid-row: 2 / span 1500;"></div>
+    <div class="day-col-bg" style="grid-column: {{ loop.index + 1 }}; grid-row: 2 / span {{ day_span }};"></div>
   {% endfor %}
   {% for b in blocks %}
     {% set ev = b.item %}
