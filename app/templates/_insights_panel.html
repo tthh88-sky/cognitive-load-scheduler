@@ -1,0 +1,29 @@
+{% if insights %}
+<div class="insights-panel">
+  <h3>Insights</h3>
+  {% if insights.median_duration_error.samples >= 5 %}
+    {% set pct = (insights.median_duration_error.value * 100)|round|int %}
+    <div>
+      {% if pct >= 0 %}Your tasks take {{ pct }}% longer than estimated{% else %}Your tasks take {{ -pct }}% less time than estimated{% endif %}
+      (median of {{ insights.median_duration_error.samples }}).
+    </div>
+  {% else %}
+    <div>Duration accuracy: not enough data yet ({{ insights.median_duration_error.samples }} sample{{ 's' if insights.median_duration_error.samples != 1 else '' }}).</div>
+  {% endif %}
+
+  {% if insights.ai_match_rate.samples >= 5 %}
+    <div>
+      AI load matched hindsight {{ (insights.ai_match_rate.value * insights.ai_match_rate.samples)|round|int }} of {{ insights.ai_match_rate.samples }} times
+      ({{ (insights.ai_match_within_one_step.value * insights.ai_match_within_one_step.samples)|round|int }} of {{ insights.ai_match_within_one_step.samples }} within one step).
+    </div>
+  {% else %}
+    <div>AI accuracy: not enough data yet ({{ insights.ai_match_rate.samples }} sample{{ 's' if insights.ai_match_rate.samples != 1 else '' }}).</div>
+  {% endif %}
+
+  {% if insights.own_match_rate.samples >= 5 %}
+    <div>Your own loads matched {{ (insights.own_match_rate.value * insights.own_match_rate.samples)|round|int }} of {{ insights.own_match_rate.samples }} times.</div>
+  {% else %}
+    <div>Self-estimate accuracy: not enough data yet ({{ insights.own_match_rate.samples }} sample{{ 's' if insights.own_match_rate.samples != 1 else '' }}).</div>
+  {% endif %}
+</div>
+{% endif %}

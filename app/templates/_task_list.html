@@ -1,0 +1,56 @@
+<table class="task-table" id="task-list">
+  <thead>
+    <tr>
+      <th></th><th>Title</th><th>Load</th><th>Duration</th><th>Deadline</th><th>Priority</th><th>Status</th><th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for t in tasks %}
+    <tr class="{{ 'task-done' if t.status.value == 'done' else '' }}">
+      <td>
+        <input type="checkbox" class="done-checkbox" title="Mark done"
+               {{ 'checked' if t.status.value == 'done' else '' }}
+               hx-post="/tasks/{{ t.id }}/status" hx-target="#task-list" hx-swap="outerHTML"
+               hx-vals="js:{status: event.target.checked ? 'done' : 'todo'}" />
+      </td>
+      <td>
+        <div class="task-title">{{ t.title }}</div>
+        {% if t.description %}<div class="task-desc">{{ t.description }}</div>{% endif %}
+        {% if t.load_source != 'manual' %}<div class="task-desc">source: {{ t.load_source }}</div>{% endif %}
+      </td>
+      <td><span class="load-badge"><span class="dot {% if t.cognitive_load <= 2 %}dot-low{% elif t.cognitive_load <= 5 %}dot-mid{% else %}dot-high{% endif %}"></span>{{ t.cognitive_load }}</span></td>
+      <td>{{ t.estimated_duration_minutes }} min</td>
+      <td>{{ t.deadline.strftime('%b %d, %H:%M') if t.deadline else '—' }}</td>
+      <td><span class="priority-badge"><span class="dot {% if t.priority.value == 'Low' %}dot-low{% elif t.priority.value == 'Medium' %}dot-mid{% else %}dot-high{% endif %}"></span>{{ t.priority.value }}</span></td>
+      <td>
+        <form hx-post="/tasks/{{ t.id }}/status" hx-target="#task-list" hx-swap="outerHTML" hx-trigger="change">
+          <select name="status">
+            {% for s in statuses %}
+              <option value="{{ s }}" {{ 'selected' if t.status.value == s else '' }}>{{ s }}</option>
+            {% endfor %}
+          </select>
+        </form>
+      </td>
+      <td>
+        <button type="button" class="edit-btn"
+                data-id="{{ t.id }}"
+                data-title="{{ t.title }}"
+                data-description="{{ t.description or '' }}"
+                data-load="{{ t.cognitive_load }}"
+                data-duration="{{ t.estimated_duration_minutes }}"
+                data-deadline="{{ t.deadline.strftime('%Y-%m-%dT%H:%M') if t.deadline else '' }}"
+                data-priority="{{ t.priority.value }}"
+                data-window="{{ t.time_window }}"
+                data-not-before="{{ t.not_before.strftime('%Y-%m-%dT%H:%M') if t.not_before else '' }}"
+                onclick="openEditTaskMode(this)">Edit</button>
+        <button class="del-btn" hx-delete="/tasks/{{ t.id }}" hx-target="#task-list" hx-swap="outerHTML" hx-confirm="Delete this task?">Delete</button>
+      </td>
+    </tr>
+    {% if open_completion_for == t.id %}
+    <tr class="completion-row-wrap"><td colspan="8">{% include "_completion_row.html" ignore missing %}</td></tr>
+    {% endif %}
+    {% else %}
+    <tr><td colspan="8" class="empty">No tasks yet. Add one above.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>

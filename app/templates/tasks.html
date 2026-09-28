@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="panel-header">
+  <h2>Tasks</h2>
+</div>
+
+{% include "_insights_panel.html" ignore missing %}
+
+<form id="task-form" class="task-form" hx-post="/tasks" hx-target="#task-list" hx-swap="outerHTML"
+      hx-on::after-request="if (event.target === this) resetTaskForm()">
+  <label class="grow">Title <input name="title" id="task-title" required /></label>
+  <label>Load
+    <select name="cognitive_load" id="load-select" onchange="updateDefaultDuration(this.value)">
+      {% for load, anchor in load_anchors.items() %}
+        <option value="{{ load }}" title="{{ anchor }}">{{ load }} — {{ anchor }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>Duration (min)
+    <input type="number" name="estimated_duration_minutes" id="duration-input" value="60" min="5" />
+  </label>
+  <label>Deadline <input type="datetime-local" name="deadline" id="task-deadline" /></label>
+  <label>Priority
+    <select name="priority" id="task-priority">
+      {% for p in priorities %}<option value="{{ p }}" {{ 'selected' if p == 'Medium' else '' }}>{{ p }}</option>{% endfor %}
+    </select>
+  </label>
+  <label>Window
+    <select name="time_window" id="task-window">
+      {% for w in time_windows %}<option value="{{ w }}">{{ w }}</option>{% endfor %}
+    </select>
+  </label>
+  <label>Not before <input type="datetime-local" name="not_before" id="task-not-before" /></label>
+  <label class="grow">Description <input name="description" id="task-description" /></label>
+  <div id="estimate-panel" class="grow"></div>
+  <input type="hidden" name="ai_load" id="ai-load-field" />
+  <input type="hidden" name="ai_duration_minutes" id="ai-duration-field" />
+  <input type="hidden" name="ai_suggested_duration" id="ai-suggested-duration-field" />
+  <input type="hidden" name="ai_confidence" id="ai-confidence-field" />
+  <input type="hidden" name="ai_rationale" id="ai-rationale-field" />
+  <input type="hidden" name="ai_model" id="ai-model-field" />
+  <button type="button" class="secondary" id="suggest-btn"
+          hx-post="/tasks/estimate" hx-include="#task-form" hx-target="#estimate-panel" hx-swap="outerHTML"
+          hx-indicator="#suggest-btn" hx-disabled-elt="#suggest-btn">Suggest</button>
+  <button type="submit" id="task-submit">Add Task</button>
+  <button type="button" id="task-cancel-edit" class="secondary" style="display: none;" onclick="resetTaskForm()">Cancel</button>
+</form>
+
+{% include "_task_list.html" %}
+
+<script>
+  const loadDefaults = {{ load_defaults|tojson }};
+  function updateDefaultDuration(load) {
+    document.getElementById('duration-input').value = loadDefaults[load];
+  }
+
+  function resetTaskForm() {
+    const form = document.getElementById('task-form');
+    form.reset();
+    document.getElementById('task-submit').textContent = 'Add Task';
+    document.getElementById('task-cancel-edit').style.display = 'none';
+    const panel = document.getElementById('estimate-panel');
+    if (panel) panel.outerHTML = '<div id="estimate-panel" class="grow"></div>';
+    form.setAttribute('hx-post', '/tasks');
+    form.removeAttribute('hx-put');
+    htmx.process(form);
+  }
+
+  function openEditTaskMode(btn) {
+    const d = btn.dataset;
+    document.getElementById('task-title').value = d.title;
+    document.getElementById('task-description').value = d.description;
+    document.getElementById('load-select').value = d.load;
+    document.getElementById('duration-input').value = d.duration;
+    document.getElementById('task-deadline').value = d.deadline;
+    document.getElementById('task-priority').value = d.priority;
+    document.getElementById('task-window').value = d.window || 'any';
+    document.getElementById('task-not-before').value = d.notBefore || '';
+
+    const form = document.getElementById('task-form');
+    document.getElementById('task-submit').textContent = 'Save Changes';
+    document.getElementById('task-cancel-edit').style.display = '';
+    form.setAttribute('hx-put', `/tasks/${d.id}`);
+    form.removeAttribute('hx-post');
+    htmx.process(form);
+    form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+</script>
+{% endblock %}

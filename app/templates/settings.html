@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="panel-header">
+  <h2>Settings</h2>
+</div>
+
+{% if errors %}
+<div class="errors">
+  {% for e in errors %}<div>{{ e }}</div>{% endfor %}
+</div>
+{% endif %}
+
+<form method="post" action="/settings" class="settings-form" id="settings-form">
+  <div class="settings-section">
+    <h3>About me</h3>
+    <p class="hint" style="margin: 0 0 10px;">Used by the AI estimator to calibrate suggestions to you.</p>
+    <textarea name="about_me" rows="3" style="width: 100%; font-family: inherit; font-size: 13px; padding: 8px; border-radius: 6px; border: 1px solid var(--border);">{{ about_me }}</textarea>
+  </div>
+
+  <div class="settings-section">
+    <h3>Work hours</h3>
+    <div class="settings-grid">
+      {% for day in week %}
+        <label class="checkbox" style="flex-direction: row; align-items: center; gap: 6px;">
+          <input type="checkbox" name="workdays" value="{{ day }}" {{ 'checked' if day in prefs.workdays else '' }} /> {{ day }}
+        </label>
+      {% endfor %}
+    </div>
+    <div class="settings-grid" style="margin-top: 10px;">
+      <label>Start <input type="time" name="workday_start" step="900" value="{{ prefs.workday_start.strftime('%H:%M') }}" /></label>
+      <label>End <input type="time" name="workday_end" step="900" value="{{ prefs.workday_end.strftime('%H:%M') }}" /></label>
+    </div>
+  </div>
+
+  <div class="settings-section">
+    <h3>Energy</h3>
+    <div class="header-actions" style="margin-bottom: 10px;">
+      <button type="button" class="secondary" onclick="applyPreset('morning')">Morning</button>
+      <button type="button" class="secondary" onclick="applyPreset('afternoon')">Afternoon</button>
+      <button type="button" class="secondary" onclick="applyPreset('flat')">Flat</button>
+    </div>
+    <div class="energy-row">
+      {% for h in range(9, 19) %}
+        <label>{{ '%02d:00'|format(h) }}
+          <input type="number" name="energy_{{ h }}" id="energy_{{ h }}" min="0" max="1" step="0.1"
+                 value="{{ prefs.energy_curve.get(h, 1.0) }}" />
+        </label>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="settings-section">
+    <h3>Focus rules</h3>
+    <div class="settings-grid">
+      <label>Residue half-life (min) <input type="number" name="residue_half_life_minutes" min="5" max="120" value="{{ prefs.residue_half_life_minutes }}" /></label>
+      <label>Transition buffer (min) <input type="number" name="transition_buffer_minutes" min="0" max="30" value="{{ prefs.transition_buffer_minutes }}" /></label>
+      <label>Stack gap (min) <input type="number" name="stack_gap_minutes" min="0" max="60" value="{{ prefs.stack_gap_minutes }}" /></label>
+    </div>
+  </div>
+
+  <div class="settings-section">
+    <h3>Deep work</h3>
+    <div class="settings-grid">
+      <label>Threshold
+        <select name="deep_load_threshold">
+          {% for v in [3, 5, 8] %}<option value="{{ v }}" {{ 'selected' if prefs.deep_load_threshold == v else '' }}>{{ v }}</option>{% endfor %}
+        </select>
+      </label>
+      <label>Daily cap (min) <input type="number" name="max_deep_minutes_per_day" min="0" max="600" value="{{ prefs.max_deep_minutes_per_day }}" /></label>
+      <label>Break (min) <input type="number" name="deep_break_minutes" min="0" max="60" value="{{ prefs.deep_break_minutes }}" /></label>
+      <label>Min deep session (min) <input type="number" name="min_session_deep_minutes" min="15" max="120" value="{{ prefs.min_session_deep_minutes }}" /></label>
+      <label>Min light session (min) <input type="number" name="min_session_light_minutes" min="5" max="60" value="{{ prefs.min_session_light_minutes }}" /></label>
+    </div>
+  </div>
+
+  <div class="settings-section">
+    <h3>Day modifiers</h3>
+    {% for day in week %}
+      <div class="day-mod-row">
+        <span class="day-name">{{ day }}</span>
+        <label>Energy scale <input type="number" name="dm_scale_{{ day }}" min="0.3" max="1.2" step="0.05"
+               value="{{ prefs.day_modifiers[day].energy_scale if day in prefs.day_modifiers else '' }}" placeholder="1.0" /></label>
+        <label>Deep-cap override <input type="number" name="dm_cap_{{ day }}" min="0" max="600"
+               value="{{ prefs.day_modifiers[day].max_deep_minutes if day in prefs.day_modifiers and prefs.day_modifiers[day].max_deep_minutes is not none else '' }}" placeholder="default" /></label>
+      </div>
+    {% endfor %}
+  </div>
+
+  <div>
+    <button type="submit">Save Settings</button>
+  </div>
+</form>
+
+<script>
+  const presets = {{ presets|tojson }};
+  function applyPreset(name) {
+    const curve = presets[name];
+    for (const h in curve) {
+      const el = document.getElementById('energy_' + h);
+      if (el) el.value = curve[h];
+    }
+  }
+</script>
+{% endblock %}

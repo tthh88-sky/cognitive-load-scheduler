@@ -1,0 +1,7 @@
+{% if health.loaded %}
+  <span class="llm-badge" title="{{ health.provider }}">AI: {{ health.model }}</span>
+{% elif health.reachable %}
+  <span class="llm-badge" title="{{ health.detail }}">AI warming up</span>
+{% else %}
+  <span class="llm-badge" title="{{ health.detail }}">AI offline, manual mode</span>
+{% endif %}

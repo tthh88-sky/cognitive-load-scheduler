@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="panel-header">
+  <h2>Overview — week of {{ week_start.strftime('%b %d, %Y') }}</h2>
+</div>
+<p class="hint" style="margin-bottom: 16px;">
+  Calendar events and this week's scheduled tasks in one grid, read-only.
+  Add or edit events on the <a href="/calendar">Calendar</a> tab, generate or
+  regenerate the plan on the <a href="/plan">Plan</a> tab.
+</p>
+
+<div class="week-toggle">
+  <a href="/overview?week=this" class="{{ 'active' if week == 'this' else '' }}">This week</a>
+  <a href="/overview?week=next" class="{{ 'active' if week == 'next' else '' }}">Next week</a>
+</div>
+
+<div class="week-grid" style="grid-template-columns: 56px repeat({{ day_order|length }}, 1fr); grid-template-rows: 32px;">
+  <div class="week-grid-head" style="grid-column: 1;"></div>
+  {% for day in day_order %}
+    <div class="week-grid-head" style="grid-column: {{ loop.index + 1 }};">{{ day }}</div>
+  {% endfor %}
+  {% for row_start, label in hour_labels %}
+    <div class="hour-label-cell" style="grid-row: {{ row_start }} / span 30;">{{ label }}</div>
+  {% endfor %}
+  {% for day in day_order %}
+    <div class="day-col-bg" style="grid-column: {{ loop.index + 1 }}; grid-row: 2 / span 1500;"></div>
+  {% endfor %}
+  {% for b in blocks %}
+    {% if b.kind == 'event' %}
+      {% set ev = b.item %}
+      <div class="grid-block event-block-g {{ 'is-lunch' if ev.event_type.value == 'lunch' else '' }}"
+           style="grid-column: {{ b.col }}; grid-row: {{ b.row_start }} / span {{ b.row_span }};">
+        <div class="block-title"><span class="dot dot-{{ ev.event_type.value }}"></span>{{ ev.title }}</div>
+      </div>
+    {% else %}
+      {% set a = b.item %}
+      <div class="grid-block task-block-g {{ 'override' if a.override_reason else '' }} {{ 'overlap-half' if b.overlap else '' }}"
+           style="grid-column: {{ b.col }}; grid-row: {{ b.row_start }} / span {{ b.row_span }};" tabindex="0">
+        <div class="block-title">
+          {{ a.task.title }}
+          <span class="load-badge"><span class="dot {% if a.task.cognitive_load <= 2 %}dot-low{% elif a.task.cognitive_load <= 5 %}dot-mid{% else %}dot-high{% endif %}"></span>{{ a.task.cognitive_load }}</span>
+          {% if a.override_reason %}<span class="badge-override">prioritized</span>{% endif %}
+          {% if a.split_label %}<span class="badge-split">split {{ a.split_label }}</span>{% endif %}
+        </div>
+        <div class="block-time">{{ a.slot_start.strftime('%H:%M') }}–{{ a.slot_end.strftime('%H:%M') }}</div>
+        <div class="block-reason">{{ a.reasoning_text }}</div>
+      </div>
+    {% endif %}
+  {% endfor %}
+</div>
+
+<div class="legend">
+  <span class="legend-item"><span class="dot dot-meeting"></span>meeting</span>
+  <span class="legend-item"><span class="dot dot-commute"></span>commute</span>
+  <span class="legend-item"><span class="dot dot-on_site"></span>on_site</span>
+  <span class="legend-item"><span class="dot dot-lunch"></span>lunch</span>
+  <span class="legend-item"><span class="dot dot-other"></span>other</span>
+  <span class="legend-item"><span class="dot dot-scheduled-task"></span>scheduled task</span>
+</div>
+{% endblock %}

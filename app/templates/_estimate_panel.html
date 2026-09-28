@@ -1,0 +1,33 @@
+<div id="estimate-panel">
+{% if unavailable %}
+  <div class="estimate-panel">No suggestion, enter manually.</div>
+{% elif suggestion and suggestion.confidence == 'low' %}
+  <div class="estimate-panel">
+    <div><span class="ai-badge">AI</span> {{ suggestion.clarifying_question }}</div>
+    <div style="display:flex; gap:8px; margin-top:8px;">
+      <input type="text" id="estimate-answer" name="answer" placeholder="Your answer" style="flex:1;" />
+      <button type="button" hx-post="/tasks/estimate" hx-include="#task-form" hx-target="#estimate-panel" hx-swap="outerHTML">Re-estimate</button>
+    </div>
+  </div>
+{% elif suggestion %}
+  <div class="estimate-panel">
+    <span class="ai-badge">AI: {{ suggestion.load }} &middot; {{ suggestion.duration_minutes }} min &middot; {{ suggestion.confidence }}</span>
+    &mdash; {{ suggestion.rationale }}
+    {% if suggestion.multiplier != 1.0 %}
+      <div>adjusted {{ '%+d'|format(((suggestion.multiplier - 1) * 100)|round|int) }}% from your history</div>
+    {% endif %}
+  </div>
+  <select id="load-select" name="cognitive_load" hx-swap-oob="true" onchange="updateDefaultDuration(this.value)">
+    {% for load, anchor in load_anchors.items() %}
+      <option value="{{ load }}" title="{{ anchor }}" {{ 'selected' if load == suggestion.load else '' }}>{{ load }} — {{ anchor }}</option>
+    {% endfor %}
+  </select>
+  <input type="number" id="duration-input" name="estimated_duration_minutes" min="5" hx-swap-oob="true" value="{{ suggestion.duration_minutes }}" />
+  <input type="hidden" name="ai_load" id="ai-load-field" hx-swap-oob="true" value="{{ suggestion.load }}" />
+  <input type="hidden" name="ai_duration_minutes" id="ai-duration-field" hx-swap-oob="true" value="{{ suggestion.raw_duration_minutes }}" />
+  <input type="hidden" name="ai_suggested_duration" id="ai-suggested-duration-field" hx-swap-oob="true" value="{{ suggestion.duration_minutes }}" />
+  <input type="hidden" name="ai_confidence" id="ai-confidence-field" hx-swap-oob="true" value="{{ suggestion.confidence }}" />
+  <input type="hidden" name="ai_rationale" id="ai-rationale-field" hx-swap-oob="true" value="{{ suggestion.rationale }}" />
+  <input type="hidden" name="ai_model" id="ai-model-field" hx-swap-oob="true" value="{{ suggestion.model }}" />
+{% endif %}
+</div>

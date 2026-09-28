@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="panel-header">
+  <h2>Weekly Calendar — week of {{ week_start.strftime('%b %d, %Y') }}</h2>
+  <div class="header-actions">
+    <button class="secondary" onclick="openLunchModal()">Set Lunch Time</button>
+    <button onclick="openAddEventModal()">+ Add Event</button>
+  </div>
+</div>
+
+<div class="week-toggle">
+  <a href="/calendar?week=this" class="{{ 'active' if week == 'this' else '' }}">This week</a>
+  <a href="/calendar?week=next" class="{{ 'active' if week == 'next' else '' }}">Next week</a>
+</div>
+
+{% include "_calendar_grid.html" %}
+
+<dialog id="event-modal">
+  <form id="event-form" hx-post="/events" hx-target="#calendar-grid" hx-swap="outerHTML"
+        hx-on::after-request="document.getElementById('event-modal').close()">
+    <h3 id="event-modal-title">Add Event</h3>
+    <label>Title <input name="title" id="event-title" required /></label>
+    <label>Day
+      <select name="day_of_week" id="event-day">
+        {% for d in days %}<option value="{{ d }}">{{ d }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>Start <input type="time" name="start_time" id="event-start" value="09:00" required /></label>
+    <label>End <input type="time" name="end_time" id="event-end" value="10:00" required /></label>
+    <label>Date (one-off) <input type="date" name="date" id="event-date" /></label>
+    <label>Type
+      <select name="event_type" id="event-type">
+        {% for t in event_types %}<option value="{{ t }}">{{ t }}</option>{% endfor %}
+      </select>
+    </label>
+    <label class="checkbox"><input type="checkbox" name="is_interruptible" id="event-interruptible" value="true" /> Interruptible</label>
+    <div class="modal-actions">
+      <button type="button" class="secondary" onclick="document.getElementById('event-modal').close()">Cancel</button>
+      <button type="submit" id="event-submit">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="lunch-modal">
+  <form hx-post="/events/lunch" hx-target="#calendar-grid" hx-swap="outerHTML"
+        hx-on::after-request="document.getElementById('lunch-modal').close()">
+    <h3>Set Lunch Time</h3>
+    <p class="hint">Applies the same lunch break to every day of the week.</p>
+    <label>Start <input type="time" name="start_time" value="{{ lunch_start }}" required /></label>
+    <label>End <input type="time" name="end_time" value="{{ lunch_end }}" required /></label>
+    <div class="modal-actions">
+      <button type="button" class="secondary" onclick="document.getElementById('lunch-modal').close()">Cancel</button>
+      <button type="submit">{{ 'Update' if lunch_set else 'Set' }} Lunch</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="legend">
+  <span class="legend-item"><span class="dot dot-meeting"></span>meeting</span>
+  <span class="legend-item"><span class="dot dot-commute"></span>commute</span>
+  <span class="legend-item"><span class="dot dot-on_site"></span>on_site</span>
+  <span class="legend-item"><span class="dot dot-lunch"></span>lunch</span>
+  <span class="legend-item"><span class="dot dot-other"></span>other</span>
+</div>
+
+<script>
+  function openLunchModal() {
+    document.getElementById('lunch-modal').showModal();
+  }
+
+  function openAddEventModal() {
+    const form = document.getElementById('event-form');
+    form.reset();
+    document.getElementById('event-modal-title').textContent = 'Add Event';
+    document.getElementById('event-submit').textContent = 'Save';
+    form.setAttribute('hx-post', '/events');
+    form.removeAttribute('hx-put');
+    htmx.process(form);
+    document.getElementById('event-modal').showModal();
+  }
+
+  function openEditEventModal(btn) {
+    const d = btn.dataset;
+    document.getElementById('event-title').value = d.title;
+    document.getElementById('event-day').value = d.day;
+    document.getElementById('event-start').value = d.start;
+    document.getElementById('event-end').value = d.end;
+    document.getElementById('event-date').value = d.date || '';
+    document.getElementById('event-type').value = d.type;
+    document.getElementById('event-interruptible').checked = d.interruptible === 'true';
+
+    const form = document.getElementById('event-form');
+    document.getElementById('event-modal-title').textContent = 'Edit Event';
+    document.getElementById('event-submit').textContent = 'Save Changes';
+    form.setAttribute('hx-put', `/events/${d.id}`);
+    form.removeAttribute('hx-post');
+    htmx.process(form);
+    document.getElementById('event-modal').showModal();
+  }
+</script>
+{% endblock %}

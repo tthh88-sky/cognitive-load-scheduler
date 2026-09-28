@@ -1,0 +1,14 @@
+<div class="completion-row">
+  <form hx-post="/tasks/{{ t.id }}/complete" hx-target="#task-list" hx-swap="outerHTML">
+    <label style="display:flex; gap:8px; align-items:center; font-size:12px;">
+      Actual minutes
+      <input type="number" name="actual_minutes" min="1" value="{{ completion_prefill }}" style="width:80px;" />
+    </label>
+    <div class="hindsight-btns">
+      <button type="submit" name="hindsight" value="easier" class="secondary">Easier than expected</button>
+      <button type="submit" name="hindsight" value="right" class="secondary">About right</button>
+      <button type="submit" name="hindsight" value="harder" class="secondary">Harder than expected</button>
+      <button type="submit" formnovalidate onclick="this.form.querySelectorAll('input,select').forEach(el=>el.value='');" class="secondary">Skip</button>
+    </div>
+  </form>
+</div>
