@@ -19,6 +19,16 @@ Then open http://localhost:8000 (redirects to the Plan tab). On startup the
 app adds any missing columns to `scheduler.db` (backing it up first as
 `scheduler.db.bak-<timestamp>`) — see `app/migrations.py`.
 
+## Deploying
+
+`render.yaml` is a Render Blueprint for a plain web service (`pip install`,
+then `uvicorn app.main:app`) with `LLM_PROVIDER=none`, so a hosted demo never
+tries to reach a local Ollama. Render's free tier has no persistent disk, so
+`scheduler.db` resets to empty on every deploy/restart — fine for sharing a
+demo, not for real data. Add a paid Render disk (mount it and point
+`SCHEDULER_DB_URL` at a file under that mount) if you want data to survive
+restarts.
+
 ### Local dev without a ready Ollama setup
 
 `python scripts/dev_server.py` (what `.claude/launch.json` runs) defaults
