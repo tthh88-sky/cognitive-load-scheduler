@@ -57,6 +57,12 @@
   function resetTaskForm() {
     const form = document.getElementById('task-form');
     form.reset();
+    // form.reset() restores *default* values, and a Suggest response swaps in
+    // elements whose defaults are the AI's values -- clear them explicitly so
+    // the next task doesn't inherit the last suggestion (and its ai_* source).
+    form.querySelectorAll('input[type=hidden][name^=ai_]').forEach(el => { el.value = ''; });
+    document.getElementById('load-select').selectedIndex = 0;
+    document.getElementById('duration-input').value = 60;
     document.getElementById('task-submit').textContent = 'Add Task';
     document.getElementById('task-cancel-edit').style.display = 'none';
     const panel = document.getElementById('estimate-panel');

@@ -117,6 +117,16 @@ def test_unschedulable_longest_window():
     assert "115 min" in a.reasoning_text
 
 
+def test_unschedulable_deadline_already_passed():
+    tasks = [TaskIn(1, "x", 3, 60, datetime(2026, 1, 5, 12, 0), "Medium")]
+    now = datetime(2026, 1, 6, 9, 0)  # Tue; the Mon deadline is behind us
+    assignments = generate_plan(tasks, [], WEEK_START, now=now)
+    a = assignments[0]
+    assert a.unschedulable
+    assert "already passed" in a.reasoning_text
+    assert "Jan 05" in a.reasoning_text
+
+
 def test_unschedulable_cap():
     prefs = Preferences(max_deep_minutes_per_day=60)
     tasks = [TaskIn(1, "x", 8, 120, None, "Medium")]

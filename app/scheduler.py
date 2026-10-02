@@ -812,6 +812,16 @@ def _diagnose_unschedulable(task: TaskIn, day_states: dict[str, _DayState], pref
 
     # Stage 2: + deadline
     if task.deadline is not None:
+        open_days = [
+            datetime.combine(ds.date, _time_from_minutes(ds.open_min))
+            for ds in day_states.values()
+            if ds.available
+        ]
+        if open_days and min(open_days) >= task.deadline:
+            return (
+                f"Deadline {task.deadline.strftime('%a %b %d %H:%M')} has already passed; "
+                f"move it later to schedule this task."
+            )
         best2 = 0
         ok2 = False
         for day in prefs.workdays:

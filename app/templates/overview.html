@@ -34,8 +34,9 @@
       </div>
     {% else %}
       {% set a = b.item %}
-      <div class="grid-block task-block-g {{ 'override' if a.override_reason else '' }} {{ 'overlap-half' if b.overlap else '' }}"
-           style="grid-column: {{ b.col }}; grid-row: {{ b.row_start }} / span {{ b.row_span }};" tabindex="0">
+      <div class="grid-block task-block-g {{ 'override' if a.override_reason else '' }} {{ 'overlap-half' if b.overlap else '' }} {{ 'short' if b.row_span <= 20 else '' }}"
+           style="grid-column: {{ b.col }}; grid-row: {{ b.row_start }} / span {{ b.row_span }};" tabindex="0"
+           title="{{ a.slot_start.strftime('%H:%M') }}–{{ a.slot_end.strftime('%H:%M') }} · {{ a.reasoning_text }}">
         <div class="block-title">
           {{ a.task.title }}
           <span class="load-badge"><span class="dot {% if a.task.cognitive_load <= 2 %}dot-low{% elif a.task.cognitive_load <= 5 %}dot-mid{% else %}dot-high{% endif %}"></span>{{ a.task.cognitive_load }}</span>
