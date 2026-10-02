@@ -29,14 +29,13 @@ demo, not for real data. Add a paid Render disk (mount it and point
 `SCHEDULER_DB_URL` at a file under that mount) if you want data to survive
 restarts.
 
-### Local dev without a ready Ollama setup
+### Local dev with Ollama
 
-`python scripts/dev_server.py` (what `.claude/launch.json` runs) defaults
-`LLM_PROVIDER=none` so the app never blocks on a half-configured local
-Ollama — the AI badge just reads "AI offline, manual mode" and Suggest
-says "enter manually". This default only applies if `LLM_PROVIDER` isn't
-already set in your environment; unset it or export `LLM_PROVIDER=ollama`
-once your Ollama setup is ready (see below).
+`python scripts/dev_server.py` (what `.claude/launch.json` runs) uses your
+local Ollama with `qwen3.5:9b` by default. Make sure it's pulled
+(`ollama pull qwen3.5:9b`) and `ollama serve` is running. To run in manual
+mode with no AI at all, set `LLM_PROVIDER=none` first — the AI badge then
+reads "AI offline, manual mode" and Suggest says "enter manually".
 
 ## Run tests
 
@@ -57,7 +56,7 @@ the app runs in manual mode.
 |---|---|---|
 | `LLM_PROVIDER` | `ollama` | `ollama` or `none` (disables AI features) |
 | `LLM_HOST` | `http://localhost:11434` | Ollama server URL |
-| `LLM_MODEL` | `qwen3.8:27b` | Any local Ollama tag. Tags ending in `cloud` are always refused. |
+| `LLM_MODEL` | `qwen3.5:9b` | Any local Ollama tag. Tags ending in `cloud` are always refused. |
 | `LLM_ALLOW_CLOUD` | `0` | Set to `1` to allow a `*cloud` tag (not recommended — sends task data off-machine) |
 | `LLM_TIMEOUT_S` | `60` | Per-request timeout |
 | `LLM_KEEP_ALIVE` | `30m` | How long Ollama keeps the model loaded |
@@ -135,8 +134,8 @@ and your submitted values, without saving.
   clock time, since the formulas themselves are what's authoritative and
   are otherwise verified against the spec's precise numeric examples
   (residue decay values, costs, etc.) elsewhere in the suite.
-- `LLM_PROVIDER` defaults to `none` in local dev (`scripts/dev_server.py`
-  only, not the library default) since Ollama wasn't fully set up during
-  this build — see "Local dev without a ready Ollama setup" above. The real
-  `OllamaProvider` path is fully implemented and unit-tested against a
-  monkeypatched client; it just hasn't been exercised against a live model.
+- The default model is `qwen3.5:9b` rather than the spec's `qwen3.8:27b`
+  (spec D6 makes the model configurable via `LLM_MODEL`). It was smoke-tested
+  against a live local Ollama: valid JSON on the first try, with sensible
+  load/duration estimates. The hosted Render demo still runs with
+  `LLM_PROVIDER=none`, since it can't reach a local Ollama.

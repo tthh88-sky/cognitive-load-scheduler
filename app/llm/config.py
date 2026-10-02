@@ -13,7 +13,7 @@ from dataclasses import dataclass
 class LLMConfig:
     provider: str = "ollama"  # LLM_PROVIDER: "ollama" or "none"
     host: str = "http://localhost:11434"  # LLM_HOST
-    model: str = "qwen3.8:27b"  # LLM_MODEL
+    model: str = "qwen3.5:9b"  # LLM_MODEL
     allow_cloud: bool = False  # LLM_ALLOW_CLOUD, "1" means True
     timeout_s: float = 60.0  # LLM_TIMEOUT_S
     keep_alive: str = "30m"  # LLM_KEEP_ALIVE
