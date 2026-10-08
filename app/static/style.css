@@ -317,11 +317,12 @@ tr.task-done .task-title { text-decoration: line-through; }
 }
 
 .week-grid {
+  /* Rows are one minute each: at least --minute-px tall (a 9-hour day is
+     ~790px), and taller wherever a block's contents need the room. Rows are
+     shared by every day, so columns stay aligned and hour labels stay true. */
+  --minute-px: 1.4px;
   display: grid;
-  grid-auto-rows: 1.1px;
-  flex: 1 1 0;
-  min-height: 260px;
-  overflow: hidden;
+  flex: 0 0 auto;
   background: var(--surface);
   border: 1px solid var(--border);
   position: relative;
@@ -354,13 +355,16 @@ tr.task-done .task-title { text-decoration: line-through; }
   border-left: 1px solid var(--border);
 }
 .grid-block {
+  position: relative;
   border-radius: 5px;
   padding: 3px 6px;
-  overflow: hidden;
+  min-width: 0;
+  overflow-wrap: anywhere;
   font-size: 11px;
   margin: 0 2px;
   z-index: 1;
 }
+.grid-block:hover, .grid-block:focus { z-index: 3; }
 .grid-block.event-block-g {
   background: var(--events-bg);
   border: 1px solid var(--events-border);
@@ -378,12 +382,27 @@ tr.task-done .task-title { text-decoration: line-through; }
   background: #fee2e2;
   border-color: #fecaca;
 }
-.grid-block.short { padding: 0 6px; display: flex; align-items: center; }
-.grid-block.short .block-title { font-size: 9px; line-height: 10px; }
-.grid-block.short .block-time, .grid-block.short .block-reason, .grid-block.short .block-warnings { display: none; }
-.grid-block .block-title { font-weight: 500; display: flex; align-items: center; gap: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.grid-block.short { padding: 1px 6px; display: flex; flex-wrap: wrap; align-items: center; column-gap: 6px; }
+.grid-block .block-title { font-weight: 500; line-height: 1.3; }
+.grid-block .block-title .load-badge, .grid-block .block-title .badge-override, .grid-block .block-title .badge-split { margin-left: 4px; white-space: nowrap; }
 .grid-block .block-time { color: var(--text-muted); font-size: 10px; }
-.grid-block .block-reason { display: none; color: var(--text-muted); margin-top: 4px; line-height: 1.4; white-space: normal; }
+/* Floats over the grid on hover, so revealing it doesn't resize the rows. */
+.grid-block .block-reason {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: max(100%, 240px);
+  margin-top: 2px;
+  padding: 6px 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+.grid-block.last-col .block-reason { left: auto; right: 0; }
 .grid-block:hover .block-reason, .grid-block:focus .block-reason { display: block; }
 .grid-block .block-warnings { color: var(--c-override); font-size: 10px; margin-top: 3px; }
 .badge-oneoff { color: var(--accent); font-size: 9px; font-weight: 600; text-transform: uppercase; margin-left: 4px; }

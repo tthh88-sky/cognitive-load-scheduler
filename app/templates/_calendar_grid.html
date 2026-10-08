@@ -1,4 +1,4 @@
-<div class="week-grid" id="calendar-grid" style="grid-template-columns: 56px repeat({{ day_order|length }}, 1fr); grid-template-rows: 32px repeat({{ day_span }}, 1fr);">
+<div class="week-grid" id="calendar-grid" style="grid-template-columns: 56px repeat({{ day_order|length }}, 1fr); grid-template-rows: 32px repeat({{ day_span }}, minmax(var(--minute-px, 1.4px), auto));">
   <div class="week-grid-head" style="grid-column: 1;"></div>
   {% for day in day_order %}
     <div class="week-grid-head" style="grid-column: {{ loop.index + 1 }};">{{ day }}</div>
@@ -11,7 +11,7 @@
   {% endfor %}
   {% for b in blocks %}
     {% set ev = b.item %}
-    <div class="grid-block event-block-g {{ 'is-lunch' if ev.event_type.value == 'lunch' else '' }}"
+    <div class="grid-block event-block-g {{ 'is-lunch' if ev.event_type.value == 'lunch' else '' }} {{ 'short' if b.row_span <= 25 else '' }} {{ 'last-col' if b.col == day_order|length + 1 else '' }}"
          style="grid-column: {{ b.col }}; grid-row: {{ b.row_start }} / span {{ b.row_span }};"
          title="{{ ev.event_type.value }}">
       <div class="block-title">

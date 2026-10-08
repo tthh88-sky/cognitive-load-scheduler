@@ -14,7 +14,7 @@
   <a href="/overview?week=next" class="{{ 'active' if week == 'next' else '' }}">Next week</a>
 </div>
 
-<div class="week-grid" style="grid-template-columns: 56px repeat({{ day_order|length }}, 1fr); grid-template-rows: 32px repeat({{ day_span }}, 1fr);">
+<div class="week-grid" style="grid-template-columns: 56px repeat({{ day_order|length }}, 1fr); grid-template-rows: 32px repeat({{ day_span }}, minmax(var(--minute-px, 1.4px), auto));">
   <div class="week-grid-head" style="grid-column: 1;"></div>
   {% for day in day_order %}
     <div class="week-grid-head" style="grid-column: {{ loop.index + 1 }};">{{ day }}</div>
@@ -28,13 +28,13 @@
   {% for b in blocks %}
     {% if b.kind == 'event' %}
       {% set ev = b.item %}
-      <div class="grid-block event-block-g {{ 'is-lunch' if ev.event_type.value == 'lunch' else '' }}"
+      <div class="grid-block event-block-g {{ 'is-lunch' if ev.event_type.value == 'lunch' else '' }} {{ 'short' if b.row_span <= 25 else '' }} {{ 'last-col' if b.col == day_order|length + 1 else '' }}"
            style="grid-column: {{ b.col }}; grid-row: {{ b.row_start }} / span {{ b.row_span }};">
         <div class="block-title"><span class="dot dot-{{ ev.event_type.value }}"></span>{{ ev.title }}</div>
       </div>
     {% else %}
       {% set a = b.item %}
-      <div class="grid-block task-block-g {{ 'override' if a.override_reason else '' }} {{ 'overlap-half' if b.overlap else '' }} {{ 'short' if b.row_span <= 20 else '' }}"
+      <div class="grid-block task-block-g {{ 'override' if a.override_reason else '' }} {{ 'overlap-half' if b.overlap else '' }} {{ 'short' if b.row_span <= 25 else '' }} {{ 'last-col' if b.col == day_order|length + 1 else '' }}"
            style="grid-column: {{ b.col }}; grid-row: {{ b.row_start }} / span {{ b.row_span }};" tabindex="0"
            title="{{ a.slot_start.strftime('%H:%M') }}–{{ a.slot_end.strftime('%H:%M') }} · {{ a.reasoning_text }}">
         <div class="block-title">
