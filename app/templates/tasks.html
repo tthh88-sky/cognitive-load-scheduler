@@ -7,7 +7,7 @@
 {% include "_insights_panel.html" ignore missing %}
 
 <form id="task-form" class="task-form" hx-post="/tasks" hx-target="#task-list" hx-swap="outerHTML"
-      hx-on::after-request="if (event.target === this) resetTaskForm()">
+      hx-on::after-request="if (event.target === this && !event.detail.pathInfo.requestPath.endsWith('/estimate')) resetTaskForm()">
   <label class="grow">Title <input name="title" id="task-title" required /></label>
   <label>Load
     <select name="cognitive_load" id="load-select" onchange="updateDefaultDuration(this.value)">
