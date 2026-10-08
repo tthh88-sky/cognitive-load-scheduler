@@ -624,6 +624,24 @@ def _build_outcomes(db: Session) -> list[calibration.Outcome]:
     ]
 
 
+def _history_example(o: calibration.Outcome) -> estimator.HistoryExample:
+    hindsight = None
+    if o.hindsight_load is not None:
+        if o.hindsight_load < o.load:
+            hindsight = "easier"
+        elif o.hindsight_load > o.load:
+            hindsight = "harder"
+        else:
+            hindsight = "about right"
+    return estimator.HistoryExample(
+        title=o.title,
+        load=o.load,
+        estimated_minutes=o.estimated_minutes,
+        actual_minutes=o.actual_minutes,
+        hindsight=hindsight,
+    )
+
+
 @app.post("/tasks/estimate", response_class=HTMLResponse)
 def estimate_task(
     request: Request,
@@ -635,7 +653,7 @@ def estimate_task(
 ):
     settings = _get_plan_settings(db)
     outcomes = _build_outcomes(db)
-    examples = calibration.select_examples(outcomes, title)
+    examples = [_history_example(o) for o in calibration.select_examples(outcomes, title)]
     try:
         suggestion = estimator.estimate(
             provider,

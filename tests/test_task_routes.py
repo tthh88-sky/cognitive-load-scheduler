@@ -52,6 +52,31 @@ def test_estimate_low_confidence(client):
         _clear_override(app)
 
 
+def test_estimate_with_completed_history(client):
+    from app.main import app
+
+    client.post("/tasks", data={"title": "Ledger schema migration", "cognitive_load": 5, "priority": "Medium"})
+    task_id = client.get("/api/tasks").json()[0]["id"]
+    client.post(f"/tasks/{task_id}/status", data={"status": "done"})
+    client.post(f"/tasks/{task_id}/complete", data={"actual_minutes": "150", "hindsight": "harder"})
+
+    provider = FakeProvider(
+        [
+            '{"rationale":"Schema work","cognitive_load":8,"estimated_duration_minutes":120,'
+            '"confidence":"high","clarifying_question":""}'
+        ]
+    )
+    _override(app, provider)
+    try:
+        r = client.post("/tasks/estimate", data={"title": "Ledger refunds schema", "description": "", "answer": ""})
+        assert r.status_code == 200
+        assert "AI: 8" in r.text
+        _system, user = provider.calls[0]
+        assert "Ledger schema migration | 5 | 120 | 150 | harder" in user
+    finally:
+        _clear_override(app)
+
+
 def test_estimate_unavailable_shows_manual_message(client):
     from app.main import app
 
