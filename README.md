@@ -37,6 +37,15 @@ local Ollama with `qwen3.5:9b` by default. Make sure it's pulled
 mode with no AI at all, set `LLM_PROVIDER=none` first — the AI badge then
 reads "AI offline, manual mode" and Suggest says "enter manually".
 
+### Demo data
+
+`python scripts/seed_demo.py` replaces the db's events, tasks and plans with
+a demo persona (a backend engineer with a meeting-heavy Tuesday, a 9-task
+backlog due next week, and 15 completed tasks of history so Insights and the
+"adjusted +N% from your history" calibration show up immediately). It backs
+the db up to `scheduler.db.bak-<timestamp>` first. Pass `--week this` to date
+it against the current week instead of next week.
+
 ## Run tests
 
 ```
